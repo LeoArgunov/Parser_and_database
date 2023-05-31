@@ -1,0 +1,261 @@
+from bs4 import BeautifulSoup as bs
+import sqlite3
+import matplotlib.pyplot as plt
+import statistics
+
+
+f = open('cars_moscow_new.txt', 'r', encoding="utf-8")
+f_cars = f.read()
+data = bs(f_cars, 'html.parser')
+#названия
+car_names = data.find_all('div', class_='css-l1wt7n e3f4v4l2')
+car_names_list = [elem.find_all('span')[0].text[:-1] for elem in car_names]
+car_names_res = ''.join(car_names_list)
+car_names_res = car_names_res.split('\n')
+car_names_res = [i.strip() for i in car_names_res]
+
+car_names_res = [i for i in car_names_res if len(i) > 0]
+#print(car_names_res)
+
+#объем топливо передача колеса пробег
+car_char = data.find_all('div', class_='css-1fe6w6s e162wx9x0')
+car_char_list = [elem.text[:-1] for elem in car_char]
+car_char_res = ''.join(car_char_list[:10])
+car_char_res = car_char_res.split('\n')
+car_char_res = [i.strip() for i in car_char_res]
+car_char_res = [i for i in car_char_res if len(i) > 0]
+
+for i in car_char_res:
+    if i == ',':
+        car_char_res.remove(i)
+#print(car_char_res)
+#цена
+car_price = data.find_all('div', class_='css-1i8tk3y eyvqki92')
+car_price_list = [elem.find_all('span')[0].text for elem in car_price]
+car_price_list = [i.replace('\xa0', '') for i in car_price_list]
+car_price_res = ''.join(car_price_list)
+car_price_res = car_price_res.split('\n')
+car_price_res = [i.strip() for i in car_price_res]
+
+car_price_res = [i for i in car_price_res if len(i) > 0 and i != '₽']
+car_price_res = [int(i) for i in car_price_res]
+#print(car_price_res)
+f.close()
+
+names_and_price = list(set(list(zip(car_names_res, car_price_res))))
+
+conn = sqlite3.connect('cars.sqlite')
+cur = conn.cursor()
+cur.execute('''CREATE TABLE IF NOT EXISTS new_cars  
+         (id integer PRIMARY KEY autoincrement,
+         name TEXT,
+         price integer);''')
+conn.commit()
+cur.executemany("INSERT INTO new_cars(name, price) VALUES(?, ?);", names_and_price)
+conn.commit()
+
+cur.execute("SELECT price FROM new_cars;")
+res = cur.fetchall()
+res_new = []
+for i in res:
+    res_new.append(*i)
+#print(res_new)
+
+# для бу машин **********************************************************************
+f2 = open('cars_moscow_used.txt', 'r', encoding="utf-8")
+f_cars = f2.read()
+data = bs(f_cars, 'html.parser')
+#названия
+car_names = data.find_all('div', class_='css-l1wt7n e3f4v4l2')
+car_names_list = [elem.find_all('span')[0].text[:-1] for elem in car_names]
+car_names_res = ''.join(car_names_list)
+car_names_res = car_names_res.split('\n')
+car_names_res = [i.strip() for i in car_names_res]
+
+car_names_res = [i for i in car_names_res if len(i) > 0]
+#print(car_names_res)
+
+#объем топливо передача колеса пробег
+car_char = data.find_all('div', class_='css-1fe6w6s e162wx9x0')
+car_char_list = [elem.text[:-1] for elem in car_char]
+car_char_res = ''.join(car_char_list[:10])
+car_char_res = car_char_res.split('\n')
+car_char_res = [i.strip() for i in car_char_res]
+car_char_res = [i for i in car_char_res if len(i) > 0]
+
+for i in car_char_res:
+    if i == ',':
+        car_char_res.remove(i)
+#print(car_char_res)
+#цена
+car_price = data.find_all('div', class_='css-1i8tk3y eyvqki92')
+car_price_list = [elem.find_all('span')[0].text for elem in car_price]
+car_price_list = [i.replace('\xa0', '') for i in car_price_list]
+car_price_res = ''.join(car_price_list)
+car_price_res = car_price_res.split('\n')
+car_price_res = [i.strip() for i in car_price_res]
+
+car_price_res = [i for i in car_price_res if len(i) > 0 and i != '₽']
+car_price_res = [int(i) for i in car_price_res]
+#print(car_price_res)
+f2.close()
+
+names_and_price2 = list(set(list(zip(car_names_res, car_price_res))))
+
+cur.execute('''CREATE TABLE IF NOT EXISTS used_cars  
+         (id integer PRIMARY KEY autoincrement,
+         name TEXT,
+         price integer);''')
+conn.commit()
+cur.executemany("INSERT INTO used_cars(name, price) VALUES(?, ?);", names_and_price2)
+conn.commit()
+
+cur.execute("SELECT price FROM used_cars;")
+res = cur.fetchall()
+res_used = []
+for i in res:
+    res_used.append(*i)
+#print(res_used)
+
+# для бензина ***************************************************************************
+f3 = open('cars_moscow_petrol.txt', 'r', encoding="utf-8")
+f_cars = f3.read()
+data = bs(f_cars, 'html.parser')
+#названия
+car_names = data.find_all('div', class_='css-l1wt7n e3f4v4l2')
+car_names_list = [elem.find_all('span')[0].text[:-1] for elem in car_names]
+car_names_res = ''.join(car_names_list)
+car_names_res = car_names_res.split('\n')
+car_names_res = [i.strip() for i in car_names_res]
+
+car_names_res = [i for i in car_names_res if len(i) > 0]
+#print(car_names_res)
+
+#объем топливо передача колеса пробег
+car_char = data.find_all('div', class_='css-1fe6w6s e162wx9x0')
+car_char_list = [elem.text[:-1] for elem in car_char]
+car_char_res = ''.join(car_char_list[:10])
+car_char_res = car_char_res.split('\n')
+car_char_res = [i.strip() for i in car_char_res]
+car_char_res = [i for i in car_char_res if len(i) > 0]
+
+for i in car_char_res:
+    if i == ',':
+        car_char_res.remove(i)
+#print(car_char_res)
+#цена
+car_price = data.find_all('div', class_='css-1i8tk3y eyvqki92')
+car_price_list = [elem.find_all('span')[0].text for elem in car_price]
+car_price_list = [i.replace('\xa0', '') for i in car_price_list]
+car_price_res = ''.join(car_price_list)
+car_price_res = car_price_res.split('\n')
+car_price_res = [i.strip() for i in car_price_res]
+
+car_price_res = [i for i in car_price_res if len(i) > 0 and i != '₽']
+car_price_res = [int(i) for i in car_price_res]
+#print(car_price_res)
+f3.close()
+
+names_and_price3 = list(set(list(zip(car_names_res, car_price_res))))
+
+cur.execute('''CREATE TABLE IF NOT EXISTS petrol_cars  
+         (id integer PRIMARY KEY autoincrement,
+         name TEXT,
+         price integer);''')
+conn.commit()
+cur.executemany("INSERT INTO petrol_cars(name, price) VALUES(?, ?);", names_and_price3)
+conn.commit()
+
+cur.execute("SELECT price FROM petrol_cars;")
+res = cur.fetchall()
+res_petrol = []
+for i in res:
+    res_petrol.append(*i)
+#print(res_petrol)
+
+#дизельное *************************************************************************
+f4 = open('cars_moscow_diesel.txt', 'r', encoding="utf-8")
+f_cars = f4.read()
+data = bs(f_cars, 'html.parser')
+#названия
+car_names = data.find_all('div', class_='css-l1wt7n e3f4v4l2')
+car_names_list = [elem.find_all('span')[0].text[:-1] for elem in car_names]
+car_names_res = ''.join(car_names_list)
+car_names_res = car_names_res.split('\n')
+car_names_res = [i.strip() for i in car_names_res]
+
+car_names_res = [i for i in car_names_res if len(i) > 0]
+#print(car_names_res)
+
+#объем топливо передача колеса пробег
+car_char = data.find_all('div', class_='css-1fe6w6s e162wx9x0')
+car_char_list = [elem.text[:-1] for elem in car_char]
+car_char_res = ''.join(car_char_list[:10])
+car_char_res = car_char_res.split('\n')
+car_char_res = [i.strip() for i in car_char_res]
+car_char_res = [i for i in car_char_res if len(i) > 0]
+
+for i in car_char_res:
+    if i == ',':
+        car_char_res.remove(i)
+#print(car_char_res)
+#цена
+car_price = data.find_all('div', class_='css-1i8tk3y eyvqki92')
+car_price_list = [elem.find_all('span')[0].text for elem in car_price]
+car_price_list = [i.replace('\xa0', '') for i in car_price_list]
+car_price_res = ''.join(car_price_list)
+car_price_res = car_price_res.split('\n')
+car_price_res = [i.strip() for i in car_price_res]
+
+car_price_res = [i for i in car_price_res if len(i) > 0 and i != '₽']
+car_price_res = [int(i) for i in car_price_res]
+#print(car_price_res)
+f4.close()
+
+names_and_price4 = list(set(list(zip(car_names_res, car_price_res))))
+
+cur.execute('''CREATE TABLE IF NOT EXISTS diesel_cars  
+         (id integer PRIMARY KEY autoincrement,
+         name TEXT,
+         price integer);''')
+conn.commit()
+cur.executemany("INSERT INTO diesel_cars(name, price) VALUES(?, ?);", names_and_price4)
+conn.commit()
+
+cur.execute("SELECT price FROM diesel_cars;")
+res = cur.fetchall()
+res_diesel = []
+for i in res:
+    res_diesel.append(*i)
+#print(res_diesel)
+
+# новые и бу**********************************************************************************************
+#среднее
+'''plt.bar(['New cars', 'Used cars'], [sum(res_new)/len(res_new), sum(res_used)/len(res_used)])
+plt.title('Mean price')
+plt.ylabel('Price')'''
+#plt.show()
+#стандартное отклонение
+'''plt.bar(['New cars', 'Used cars'], [statistics.stdev(res_new), statistics.stdev(res_used)])
+plt.title('Standard deviation')
+plt.ylabel('Price')'''
+#минимальное
+'''plt.bar(['New cars', 'Used cars'], [min(res_new), min(res_used)])
+plt.title('Min')
+plt.ylabel('Price')'''
+# бензин и дизель**********************************************************************************************
+#среднее
+'''plt.bar(['petrol cars', 'diesel cars'], [sum(res_petrol)/len(res_petrol), sum(res_diesel)/len(res_diesel)])
+plt.title('Mean price')
+plt.ylabel('Price')'''
+#plt.show()
+#стандартное отклонение
+'''plt.bar(['petrol cars', 'diesel cars'], [statistics.stdev(res_petrol), statistics.stdev(res_diesel)])
+plt.title('Standard deviation')
+plt.ylabel('Price')'''
+#min
+'''plt.bar(['petrol cars', 'diesel cars'], [min(res_petrol), min(res_diesel)])
+plt.title('Min')
+plt.ylabel('Price')'''
+
+plt.show()
